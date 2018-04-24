@@ -2,11 +2,11 @@
 
 #include <AccelStepper.h>
 
-int motorSpeed = 50000; //maximum steps per second (about 3rps / at 16 microsteps)
+int motorSpeed = 1000; //maximum steps per second (about 3rps / at 16 microsteps)
 int motorAccel = 8000; //steps/second/second to accelerate
 
-int motorDirPin = 3; //digital pin 2
-int motorStepPin = 2; //digital pin 3
+int motorDirPin = 22; //digital pin 2
+int motorStepPin = 23; //digital pin 3
 
 int motor_loc = 0;
 
@@ -33,11 +33,11 @@ void loop(){
     Serial.print('\n');
   }
   
-  if (stepper.distanceToGo() == 0){
+//  if (stepper.distanceToGo() == 0){
     //go the other way the same amount of steps
     //so if current position is 400 steps out, go position -400
     stepper.moveTo(motor_loc); 
-  }
+//  }
   
 
   

@@ -1,8 +1,10 @@
 #include "AltEncoder.h"
 #include "ros.h"
+#include <AccelStepper.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/Vector3.h>
+#include <std_msgs/Int32.h>
 
 using namespace AltEncoder;
 
@@ -23,6 +25,20 @@ Encoder *encoderList[] =
         };
 
 
+//================================STEPPER STUFF=================================
+//This is an example of how you would control 1 stepper
+int motorSpeed = 5000; //maximum steps per second (about 3rps / at 16 microsteps)
+int motorAccel = 3000; //steps/second/second to accelerate
+
+int motorDirPin = 22; //digital pin 2
+int motorStepPin = 23; //digital pin 3
+
+int motor_loc = 0;
+
+//set up the accelStepper intance
+//the "1" tells it we are using a driver
+AccelStepper stepper(1, motorStepPin, motorDirPin); 
+
 //================================GLOBALS=======================================
 //MIGHT WANT TO CHANGE:
 float motorMax = 80;  // change to adjust maximum drivetrain output!!!!!!!!!!!
@@ -35,6 +51,7 @@ float dump_throttle = 70;
 
 //Probably don't need to change:
 ros::NodeHandle nh;
+std_msgs::Int32 measured_angle;
 const int pwm_zero_throttle = 1535;
 const float pwm_throttle_scaler = 5.12;
 unsigned long lastCommand = 0; //used as a check for failsafe--CLT
@@ -168,12 +185,19 @@ void callbackDump(const geometry_msgs::Vector3 &data)
   }
 }
 
+void callbackStepper(const std_msgs::Int32 &data)
+{
+    motor_loc = (data.data  * 8.8);
+}
+
 ros::Subscriber <geometry_msgs::Twist> cmd_vel("robot/cmd_vel", &callbackVel);
 ros::Subscriber <geometry_msgs::Vector3> tool_rotate("robot/tool/rotate", &callbackToolRotate);
 ros::Subscriber <geometry_msgs::Vector3> tool_auger("robot/tool/auger", &callbackToolAuger);
 ros::Subscriber <geometry_msgs::Vector3> tool_linear("robot/tool/linear", &callbackToolLinear);
 ros::Subscriber <geometry_msgs::Vector3> dump("robot/dump", &callbackDump);
+ros::Subscriber <std_msgs::Int32> stepper_sub("stepper_angle/commanded", &callbackStepper);
 
+ros::Publisher stepper_measured("stepper_angle/measured", &measured_angle);
 
 //this makes the teensy subscribe to the topic robot/motor_control_serial and sends
 //the twist message into the function callbackVel.  piMotorControlSerial.py is
@@ -188,6 +212,9 @@ void setup() {
     nh.subscribe(tool_auger);
     nh.subscribe(tool_linear);
     nh.subscribe(dump);
+    nh.subscribe(stepper_sub);
+
+    nh.advertise(stepper_measured);
     
     //================================ENDSTOP PINS================================
     //declare that the endstop pins are inputting data to the teensy.
@@ -197,12 +224,16 @@ void setup() {
     pinMode(dumpTop, INPUT); //linear top
 
 
+    //=================================STEPPER MOTOR==============================
+    stepper.setMaxSpeed(motorSpeed);
+    stepper.setSpeed(motorSpeed);
+    stepper.setAcceleration(motorAccel);
+
     //================================STARTING INTERVAL TIMERS====================
     //this runs the control loop a specified number of times per second.  Be aware
     //that it interupts the running processes and can change variables.  This could
     //cause some weird memory issues, so it could be a location of bugs.
-    interruptTimer.begin(controlloop, 10000); //go through control loop 100 times second
-
+    interruptTimer.begin(controlloop, 2000); //go through control loop 100 times second
 
 
     //================================ENCODER SAMPLING============================
@@ -226,11 +257,10 @@ void loop() {
 
     //================================ROS=========================================
     nh.spinOnce();
-//    motors.left.throttle = 20.0;
-//    motors.right.throttle = 20.0;
-//      motors.dump.throttle = 100.0;
 
-    delay(10);
+
+
+//    delay(10);
 }//endmain
 
 
@@ -250,6 +280,16 @@ void controlloop(void) {
     }
 
     motorWrite(motors);
+    if (stepper.distanceToGo() == 0){
+        //go the other way the same amount of steps
+        //so if current position is 400 steps out, go position -400
+        
+        stepper.moveTo(motor_loc);
+        measured_angle.data = stepper.currentPosition() / (3200.0 / 400.0);
+        stepper_measured.publish( &measured_angle );
+    }
+
+    stepper.run();
 }
 
 void motorWrite(MotorControl motor_struct) {
