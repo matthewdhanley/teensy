@@ -3,7 +3,10 @@
 #include <AccelStepper.h>
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
+<<<<<<< HEAD
 #include <geometry_msgs/Point.h>
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 #include <geometry_msgs/Vector3.h>
 #include <std_msgs/Int32.h>
 
@@ -20,7 +23,12 @@ Encoder *encoderList[] =
                 new Encoder(10, 11),             // right wheels
                 new Encoder(24, 25),             // auger
                 new Encoder(26, 27),             // linear motion
+<<<<<<< HEAD
                 new Encoder(28, 29),              // rotation
+=======
+                new Encoder(28, 29),              // dump linear 1
+                new Encoder(30, 31),              // dump linear 2
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
                 nullptr
         };
 
@@ -28,10 +36,18 @@ Encoder *encoderList[] =
 //================================STEPPER STUFF=================================
 //This is an example of how you would control 1 stepper
 int motorSpeed = 5000; //maximum steps per second (about 3rps / at 16 microsteps)
+<<<<<<< HEAD
 int motorAccel = 1000; //steps/second/second to accelerate
 
 int motorDirPin = 21; //digital pin 2
 int motorStepPin = 20; //digital pin 3
+=======
+int motorAccel = 3000; //steps/second/second to accelerate
+
+int motorDirPin = 22; //digital pin 2
+int motorStepPin = 23; //digital pin 3
+
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 int motor_loc = 0;
 
 //set up the accelStepper intance
@@ -40,23 +56,35 @@ AccelStepper stepper(1, motorStepPin, motorDirPin);
 
 //================================GLOBALS=======================================
 //MIGHT WANT TO CHANGE:
+<<<<<<< HEAD
 float motorMax = 100;  // change to adjust maximum drivetrain output!!!!!!!!!!!
 int timeout = 1000; // time w/o command before robot goes to safe mode
 float angle_throttle = 0.30;
 float linear_throttle = 0.20;
 float dump_throttle = 0.70;
 float auger_throttle = 1.00;
+=======
+float motorMax = 80;  // change to adjust maximum drivetrain output!!!!!!!!!!!
+int timeout = 10000; // time w/o command before robot goes to safe mode
+float angle_throttle = 30;
+float linear_throttle = 20;
+float dump_throttle = 70;
+
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 
 
 //Probably don't need to change:
 ros::NodeHandle nh;
 std_msgs::Int32 measured_angle;
+<<<<<<< HEAD
 
 // position messages
 std_msgs::Int32 linearPos;
 std_msgs::Int32 rotPos;
 std_msgs::Int32 augerPos;
 
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 const int pwm_zero_throttle = 1535;
 const float pwm_throttle_scaler = 5.12;
 unsigned long lastCommand = 0; //used as a check for failsafe--CLT
@@ -67,14 +95,22 @@ volatile bool failsafe = 1; //start with failsafe activated...
 // should probably be using nominally open endstops
 int linearBottom = 33;
 int linearTop = 34;
+<<<<<<< HEAD
 int dumpTop = 35;
 int backLeft = 36;
 int backRight = 37;
+=======
+int dumpBottom = 35;
+int dumpTop = 36;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 
 struct Motor{
     float throttle;
     int pin;
+<<<<<<< HEAD
     long pos;
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 };
 
 struct MotorControl{
@@ -90,12 +126,21 @@ struct MotorControl{
 // THIS IS WHERE THROTTLES AND PINS NUMBERS ARE STORED
 MotorControl motors = 
   {
+<<<<<<< HEAD
     { 0.0, 2, 0 },
     { 0.0, 3, 0 },
     { 0.0, 4, 0 },
     { 0.0, 5, 0 },
     { 0.0, 6, 0 },
     { 0.0, 7, 0 }
+=======
+    { 0.0, 2 },
+    { 0.0, 3 },
+    { 0.0, 4 },
+    { 0.0, 5 },
+    { 0.0, 6 },
+    { 0.0, 7 }
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
   };
 
 
@@ -119,8 +164,13 @@ void callbackVel(const geometry_msgs::Twist &data)
     else if(data.angular.z != 0 && data.linear.x != 0)
     {
         // mix forward and turning
+<<<<<<< HEAD
         motors.left.throttle  = (abs(data.linear.z) + data.angular.z)/2;
         motors.right.throttle = (abs(data.linear.z) - data.angular.z)/2;
+=======
+        motors.left.throttle = data.linear.x + data.angular.z;
+        motors.right.throttle = data.linear.x - data.angular.z;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
     }
     else
     {
@@ -136,7 +186,11 @@ void callbackVel(const geometry_msgs::Twist &data)
 void callbackToolRotate(const geometry_msgs::Vector3 &data)
 {
   if (data.x != 0){
+<<<<<<< HEAD
     motors.angular.throttle = data.x * angle_throttle;
+=======
+    motors.angular.throttle = angle_throttle*data.x;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
   }
   else
   {
@@ -146,9 +200,20 @@ void callbackToolRotate(const geometry_msgs::Vector3 &data)
 
 void callbackToolAuger(const geometry_msgs::Vector3 &data)
 {
+<<<<<<< HEAD
   if (data.x != 0)
   {
     motors.auger.throttle = data.x * auger_throttle;
+=======
+  if (data.y != 0)
+  {
+    motors.auger.throttle = data.y;
+  }
+  
+  else if (data.x != 0)
+  {
+    motors.auger.throttle = -data.x;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
   }
   else
   {
@@ -158,9 +223,20 @@ void callbackToolAuger(const geometry_msgs::Vector3 &data)
 
 void callbackToolLinear(const geometry_msgs::Vector3 &data)
 {
+<<<<<<< HEAD
   if (data.x != 0)
   {
     motors.linear.throttle = data.x * linear_throttle;
+=======
+  if (data.y != 0)
+  {
+    motors.linear.throttle = linear_throttle;
+  }
+  
+  else if (data.x != 0)
+  {
+    motors.linear.throttle = -linear_throttle;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
   }
   else
   {
@@ -171,7 +247,14 @@ void callbackToolLinear(const geometry_msgs::Vector3 &data)
 void callbackDump(const geometry_msgs::Vector3 &data)
 {
   if (data.x != 0){
+<<<<<<< HEAD
     motors.dump.throttle = data.x * dump_throttle;
+=======
+    motors.dump.throttle = -dump_throttle;
+  }
+  else if (data.y != 0){
+    motors.dump.throttle = dump_throttle;
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
   }
   else
   {
@@ -181,9 +264,13 @@ void callbackDump(const geometry_msgs::Vector3 &data)
 
 void callbackStepper(const std_msgs::Int32 &data)
 {
+<<<<<<< HEAD
     motor_loc = data.data;
     lastCommand = millis(); //remember millis returns an unsigned long.
 
+=======
+    motor_loc = (data.data  * 8.8);
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 }
 
 ros::Subscriber <geometry_msgs::Twist> cmd_vel("robot/cmd_vel", &callbackVel);
@@ -194,10 +281,13 @@ ros::Subscriber <geometry_msgs::Vector3> dump("robot/dump", &callbackDump);
 ros::Subscriber <std_msgs::Int32> stepper_sub("stepper_angle/commanded", &callbackStepper);
 
 ros::Publisher stepper_measured("stepper_angle/measured", &measured_angle);
+<<<<<<< HEAD
 ros::Publisher LinPos("encoders/linear", &linearPos);
 ros::Publisher AugPos("encoders/auger", &augerPos);
 ros::Publisher RotPos("encoders/rotation", &rotPos);
 
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 
 //this makes the teensy subscribe to the topic robot/motor_control_serial and sends
 //the twist message into the function callbackVel.  piMotorControlSerial.py is
@@ -215,18 +305,25 @@ void setup() {
     nh.subscribe(stepper_sub);
 
     nh.advertise(stepper_measured);
+<<<<<<< HEAD
     nh.advertise(LinPos);
     nh.advertise(RotPos);
     nh.advertise(AugPos);
 
 
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
     
     //================================ENDSTOP PINS================================
     //declare that the endstop pins are inputting data to the teensy.
     pinMode(linearBottom, INPUT); //rotation bottom
     pinMode(linearTop, INPUT); //rotation top
+<<<<<<< HEAD
     pinMode(backLeft, INPUT);
     pinMode(backRight, INPUT);
+=======
+    pinMode(dumpBottom, INPUT); //linear bottom
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
     pinMode(dumpTop, INPUT); //linear top
 
 
@@ -239,7 +336,11 @@ void setup() {
     //this runs the control loop a specified number of times per second.  Be aware
     //that it interupts the running processes and can change variables.  This could
     //cause some weird memory issues, so it could be a location of bugs.
+<<<<<<< HEAD
     interruptTimer.begin(controlloop, 50000); // every x microseconds 50000=0.05
+=======
+    interruptTimer.begin(controlloop, 2000); //go through control loop 100 times second
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 
 
     //================================ENCODER SAMPLING============================
@@ -264,6 +365,12 @@ void loop() {
     //================================ROS=========================================
     nh.spinOnce();
 
+<<<<<<< HEAD
+=======
+
+
+//    delay(10);
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 }//endmain
 
 
@@ -288,11 +395,16 @@ void controlloop(void) {
         //so if current position is 400 steps out, go position -400
         
         stepper.moveTo(motor_loc);
+<<<<<<< HEAD
         measured_angle.data = stepper.currentPosition();
+=======
+        measured_angle.data = stepper.currentPosition() / (3200.0 / 400.0);
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
         stepper_measured.publish( &measured_angle );
     }
 
     stepper.run();
+<<<<<<< HEAD
 
     linearPos.data = encoderList[3]->counter;
     rotPos.data = encoderList[2]->counter;
@@ -302,6 +414,8 @@ void controlloop(void) {
     RotPos.publish( &rotPos );
     AugPos.publish( &augerPos );
 
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
 }
 
 void motorWrite(MotorControl motor_struct) {
@@ -320,6 +434,7 @@ void motorWrite(MotorControl motor_struct) {
     {
         // copy struct and convert throttles
         MotorControl motorsConverted = motor_struct;
+<<<<<<< HEAD
         // check if the endstops are activated for dumping
         if (!digitalRead(backLeft)){
           motorsConverted.left.throttle   = convertThrottle(-motor_struct.left.throttle);
@@ -341,6 +456,12 @@ void motorWrite(MotorControl motor_struct) {
                                               safeLinearThrottle(motor_struct.linear.throttle)
                                           );
                                           
+=======
+        motorsConverted.left.throttle   = convertThrottle(-motor_struct.left.throttle);
+        motorsConverted.right.throttle  = convertThrottle(motor_struct.right.throttle);
+        motorsConverted.auger.throttle  = convertThrottle(motor_struct.auger.throttle);
+        motorsConverted.linear.throttle = convertThrottle(motor_struct.linear.throttle);
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
         motorsConverted.dump.throttle   = convertThrottle(motor_struct.dump.throttle);
         motorsConverted.angular.throttle   = convertThrottle(motor_struct.angular.throttle);
 
@@ -362,6 +483,7 @@ float convertThrottle(float throttle){
                          constrain( throttle, -motorMax, motorMax) * pwm_throttle_scaler;
     return new_throttle;
 }
+<<<<<<< HEAD
 
 // function to check for linear endstops being activated. If they are, restrict throttle to zero
 float safeLinearThrottle(float throttle){
@@ -374,3 +496,5 @@ float safeLinearThrottle(float throttle){
   return throttle;
 }
 
+=======
+>>>>>>> 333f0c36f84365e08428e0b7756abc8d844fa9db
